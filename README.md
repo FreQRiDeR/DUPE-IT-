@@ -5,7 +5,6 @@
 
 Clone Disks, Partitions with ASR and Create Restorable DMG backups!
 
-* For macOS x86_64 only (For now)
 * 100% Written is Swift
 * Uses built in macOS CLI tools!
 * Clone Disks, Partitions, Containers
