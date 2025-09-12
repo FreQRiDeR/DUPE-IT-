@@ -1,5 +1,5 @@
 <div align="center">
-             <img src="/DUPE-IT!.png" width="400" />
+             <img src="/DUPE-IT.png" width="400" />
              <h1>DUPE-IT!</h1>
 </div>
 
