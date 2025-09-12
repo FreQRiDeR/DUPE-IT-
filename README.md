@@ -14,7 +14,7 @@ Clone Disks, Partitions with ASR and Create Restorable DMG backups!
 * Create a DMG for later restoration, backup!
   (Use default RWZO for read/writeable DMG. UDZO option for compressed DMG)
 
-* By FreQRiDeR and ChatGPT. (Mostly ChatGPT! LOL)
+* By FreQRiDeR, Augment and GitHub CoPilot.
 
 
 <div align="center">
