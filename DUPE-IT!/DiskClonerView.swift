@@ -21,8 +21,12 @@ struct DiskInfo: Identifiable, Hashable {
 }
 
 struct DiskClonerView: View {
+    // Verifies DMG using hdiutil scan
     @State private var availableDisks: [DiskInfo] = []
     @State private var selectedSource: DiskInfo?
+    @State private var selectedDMGPath: String? = nil
+    @State private var showingDMGOpenPanel = false
+    // Removed scan state for DMG, as scan is deprecated
     @State private var selectedTarget: DiskInfo?
     @State private var isLoading = false
     @State private var showingAlert = false
@@ -87,18 +91,35 @@ struct DiskClonerView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         Label("Source Disk", systemImage: "externaldrive")
                             .font(.headline)
-                        
                         Picker("Source Disk", selection: $selectedSource) {
                             Text("Select source disk...")
                                 .tag(nil as DiskInfo?)
-                            
                             ForEach(availableDisks) { disk in
                                 Text(disk.displayName)
                                     .tag(disk as DiskInfo?)
                             }
+                            Divider()
+                            Text("Choose DMG...")
+                                .tag(DiskInfo(deviceIdentifier: "DMG_CHOOSE", name: "Choose DMG", size: "", type: "dmg") as DiskInfo?)
                         }
                         .pickerStyle(MenuPickerStyle())
                         .disabled(isCloning || isCreatingDMG)
+                        .onChange(of: selectedSource) { newValue in
+                            if let src = newValue, src.deviceIdentifier == "DMG_CHOOSE" {
+                                selectedSource = nil
+                                showingDMGOpenPanel = true
+                            }
+                        }
+                        if let dmgPath = selectedDMGPath {
+                            HStack(spacing: 8) {
+                                Image(systemName: "doc.badge.ellipsis")
+                                Text(dmgPath)
+                                    .font(.caption)
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                                Button("Clear") { selectedDMGPath = nil }
+                            }
+                        }
                     }
                     
                     // Target Selection
@@ -258,8 +279,10 @@ struct DiskClonerView: View {
         .sheet(isPresented: $showingCommandOutput) {
             CommandOutputView(
                 isPresented: $showingCommandOutput,
-                source: selectedSource?.deviceIdentifier ?? "",
-                target: selectedTarget?.deviceIdentifier ?? ""
+                source: selectedDMGPath ?? selectedSource?.deviceIdentifier ?? "",
+                target: selectedTarget?.deviceIdentifier ?? "",
+                isDMGSource: selectedDMGPath != nil,
+                dmgPath: selectedDMGPath
             )
         }
         .sheet(isPresented: $showingDMGCommandOutput) {
@@ -270,10 +293,24 @@ struct DiskClonerView: View {
                 useUDZO: useUDZO
             )
         }
+        .fileImporter(isPresented: $showingDMGOpenPanel, allowedContentTypes: [.data], allowsMultipleSelection: false, onCompletion: { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first, url.pathExtension.lowercased() == "dmg" {
+                    selectedDMGPath = url.path
+                } else {
+                    alertMessage = "Please select a valid DMG file."
+                    showingAlert = true
+                }
+            case .failure:
+                break
+            }
+        })
     }
     
     private var canStartCloning: Bool {
-        selectedSource != nil && selectedTarget != nil && !isLoading
+        // Allow if either a disk is selected, or a DMG is selected
+        ((selectedSource != nil && selectedTarget != nil) || (selectedDMGPath != nil && selectedTarget != nil)) && !isLoading
     }
     
     private var canStartCreatingDMG: Bool {
@@ -325,17 +362,23 @@ struct DiskClonerView: View {
     }
     
     private func startCloning() {
-        guard let source = selectedSource,
-              let target = selectedTarget else { return }
-        
-        showingCommandOutput = true
+        // If using DMG as source
+        if let dmgPath = selectedDMGPath, !dmgPath.isEmpty, selectedSource == nil {
+            if selectedTarget != nil {
+                showingCommandOutput = true
+            }
+            return
+        }
+    guard selectedSource != nil, selectedTarget != nil else { return }
+    showingCommandOutput = true
     }
     
     private func startCreatingDMG() {
-        guard let source = selectedDMGSource, let outputURL = outputURL else { return }
-        
-        showingDMGCommandOutput = true
+    guard selectedDMGSource != nil, outputURL != nil else { return }
+    showingDMGCommandOutput = true
     }
+
+
 }
 
 #Preview {

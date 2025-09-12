@@ -20,6 +20,8 @@ struct CommandOutputView: View {
     @Binding var isPresented: Bool
     let source: String
     let target: String
+    var isDMGSource: Bool = false
+    var dmgPath: String? = nil
     @State private var outputText = ""
     @State private var isRunning = false
     
@@ -133,13 +135,11 @@ struct CommandOutputView: View {
     private func executeCommand() {
         isRunning = true
         outputText = ""
-        
         Task {
             do {
                 try await ASRUtility.cloneDiskWithOutput(source: source, target: target) { output in
                     appendOutput(output)
                 }
-                
                 await MainActor.run {
                     appendOutput("✅ Command completed successfully!")
                     isRunning = false
