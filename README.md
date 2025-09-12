@@ -18,6 +18,6 @@ Clone Disks, Partitions with ASR and Create Restorable DMG backups!
 
 
 <div align="center">
-             <img src="/images/window1.png" width="700" />
+             <img src="/DUPE-IT!/images/window1.png" width="700" />
              
 </div>
