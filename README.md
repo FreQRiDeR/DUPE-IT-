@@ -6,7 +6,7 @@
 Clone Disks, Partitions with ASR and Create Restorable DMG backups!
 
 * 100% Written is Swift
-* Uses built in macOS CLI tools! ASR (Apple Software Restore and HDIUTIL)
+* Uses built in macOS CLI tools! ASR (Apple Software Restore) and HDIUTIL
 * Clone Disks, Partitions, Containers
 * Select Source, DMG from dropdown menu and then target disk.
   (target disk will be completely erased!)
