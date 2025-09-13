@@ -22,3 +22,17 @@ Clone Disks, Partitions with ASR and Create Restorable DMG backups!
              <img src="/DUPE-IT!/images/window1.png" width="700" />
              
 </div>
+
+Usage
+
+Select Source disk, partition to clone in ’SOURCES’ drop down menu. This is the disk you wish to clone.
+Now select the target disk you wish to clone to in ‘TARGET’ Dropdown menu. This is the disk you wish to clone to. 
+Hit ’Start Cloning’ button. That’s it!
+
+To create a DMG backup of a disk, partition that is restorable, select DMG source disk from the dropdown menu in the DMG Creation section. By default, DUPE-IT! Will create a read/writeable DMG. (RWZO format) If you wish to create a compressed DMG to save space, select the UDZO option. (Note, the UDZO DMG is not writeable!)
+
+A few tips! If you want to clone a working macOS system and you have multiple systems on the same disk, select the container that houses the system you wish to clone. If the system is in the same container with other systems, (NOT RECCOMENDED!) Both systems will be cloned. DMG backup creation was designed to make backups of working, system disks, containers as it writes pertinent backup data needed for a bootable restoration. If you wish to make a backup of a data only disk I suggest you use Disk Utility to image the disk and use copy, paste for restoration. 
+
+Thanks for using DUPE-IT!
+
+FreQRiDeR
