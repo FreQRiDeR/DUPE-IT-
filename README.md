@@ -26,7 +26,7 @@ Clone Disks, Partitions with ASR and Create Restorable DMG backups!
 Usage
 
 Select Source disk, partition to clone in ’SOURCES’ drop down menu. This is the disk you wish to clone.
-Now select the target disk you wish to clone to in ‘TARGET’ Dropdown menu. This is the disk you wish to clone to. 
+Now select the target disk in ‘TARGET’ Dropdown menu. This is the disk you wish to clone to. 
 Hit ’Start Cloning’ button. That’s it!
 
 To create a DMG backup of a disk, partition that is restorable, select DMG source disk from the dropdown menu in the DMG Creation section. By default, DUPE-IT! Will create a read/writeable DMG. (RWZO format) If you wish to create a compressed DMG to save space, select the UDZO option. (Note, the UDZO DMG is not writeable!)
