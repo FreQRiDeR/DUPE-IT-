@@ -5,20 +5,9 @@
 //  Created by FreQRiDeR on 9/9/25.
 //
 
-import SwiftUI
 import Foundation
+import SwiftUI
 
-struct DiskInfo: Identifiable, Hashable {
-    let id = UUID()
-    let deviceIdentifier: String
-    let name: String
-    let size: String
-    let type: String
-    
-    var displayName: String {
-        "\(deviceIdentifier) - \(name) (\(size))"
-    }
-}
 
 struct DiskClonerView: View {
     // Verifies DMG using hdiutil scan

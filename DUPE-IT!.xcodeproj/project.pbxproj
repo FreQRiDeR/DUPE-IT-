@@ -6,18 +6,27 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		DC301D8D2E71182B0063C4DC /* DUPE-IT.png in Resources */ = {isa = PBXBuildFile; fileRef = DC301D8C2E71182B0063C4DC /* DUPE-IT.png */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXFileReference section */
 		DC110F862E70E6B0008E3EA3 /* DUPE-IT!.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "DUPE-IT!.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC301D8C2E71182B0063C4DC /* DUPE-IT.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "DUPE-IT.png"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DCB920C62E768A5500D07F43 /* Exceptions for "DUPE-IT!" folder in "DUPE-IT!" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				images/window1.png,
+			);
+			target = DC110F852E70E6B0008E3EA3 /* DUPE-IT! */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		DC110F882E70E6B0008E3EA3 /* DUPE-IT! */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DCB920C62E768A5500D07F43 /* Exceptions for "DUPE-IT!" folder in "DUPE-IT!" target */,
+			);
 			path = "DUPE-IT!";
 			sourceTree = "<group>";
 		};
@@ -115,7 +124,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DC301D8D2E71182B0063C4DC /* DUPE-IT.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -280,7 +288,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.DUPE-IT-";
 				PRODUCT_NAME = "DUPE-IT!";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -318,7 +326,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 12.4;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.freqrider.DUPE-IT-";
 				PRODUCT_NAME = "DUPE-IT!";
 				PROVISIONING_PROFILE_SPECIFIER = "";
