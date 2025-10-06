@@ -7,37 +7,27 @@
 
 import SwiftUI
 
-extension DateFormatter {
-    static let timeFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .medium
-        formatter.dateStyle = .none
-        return formatter
-    }()
-}
-
 struct CommandOutputView: View {
     @Binding var isPresented: Bool
     let source: String
     let target: String
-    var isDMGSource: Bool = false
-    var dmgPath: String? = nil
-    @State private var outputText = ""
-    @State private var isRunning = false
+    let isDMGSource: Bool
+    let dmgPath: String?
     
-    private var command: String {
-        "sudo asr --source \(source) --target \(target) --erase --noprompt --verbose"
-    }
+    @State private var output: [String] = []
+    @State private var isRunning = true
+    @State private var hasError = false
+    @State private var progress: Double = 0.0
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 0) {
             // Header
             HStack {
-                Image(systemName: "terminal")
+                Image(systemName: isRunning ? "gear.circle.fill" : (hasError ? "xmark.circle.fill" : "checkmark.circle.fill"))
+                    .foregroundColor(isRunning ? .blue : (hasError ? .red : .green))
                     .font(.title2)
-                    .foregroundColor(.accentColor)
                 
-                Text("Command Execution")
+                Text("Cloning Operation")
                     .font(.headline)
                 
                 Spacer()
@@ -46,108 +36,131 @@ struct CommandOutputView: View {
                     ProgressView()
                         .scaleEffect(0.8)
                 }
+                
+                Button("Close") {
+                    isPresented = false
+                }
+                .disabled(isRunning)
+            }
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
+            
+            Divider()
+            
+            // Progress Bar
+            if isRunning || progress > 0 {
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("Progress:")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        
+                        Spacer()
+                        
+                        Text("\(Int(progress * 100))%")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .monospacedDigit()
+                    }
+                    
+                    ProgressView(value: progress, total: 1.0)
+                        .progressViewStyle(LinearProgressViewStyle())
+                }
+                .padding()
+                .background(Color(NSColor.controlBackgroundColor).opacity(0.5))
             }
             
-            // Command being executed
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Executing Command:")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                Text(command)
-                    .font(.system(.caption, design: .monospaced))
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(NSColor.controlBackgroundColor))
-                    .cornerRadius(8)
-                    .textSelection(.enabled)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            Divider()
             
-            // Output area
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Output:")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
+            // Output Log
+            ScrollViewReader { proxy in
                 ScrollView {
-                    ScrollViewReader { proxy in
-                        Text(outputText.isEmpty ? "Waiting for command execution..." : outputText)
-                            .font(.system(.caption, design: .monospaced))
-                            .foregroundColor(outputText.isEmpty ? .secondary : .primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
-                            .padding(8)
-                            .id("bottom")
-                            .onChange(of: outputText) { _ in
-                                withAnimation {
-                                    proxy.scrollTo("bottom", anchor: .bottom)
-                                }
-                            }
+                    VStack(alignment: .leading, spacing: 4) {
+                        ForEach(Array(output.enumerated()), id: \.offset) { index, line in
+                            Text(line)
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(lineColor(for: line))
+                                .textSelection(.enabled)
+                                .id(index)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding()
+                }
+                .background(Color(NSColor.textBackgroundColor))
+                .onChange(of: output.count) { _ in
+                    if let lastIndex = output.indices.last {
+                        withAnimation {
+                            proxy.scrollTo(lastIndex, anchor: .bottom)
+                        }
                     }
                 }
-                .frame(height: 200)
-                .background(Color(NSColor.textBackgroundColor))
-                .cornerRadius(8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(NSColor.separatorColor), lineWidth: 1)
-                )
             }
             
-            // Buttons
+            Divider()
+            
+            // Footer
             HStack {
                 if !isRunning {
-                    Button("Close") {
-                        isPresented = false
+                    if hasError {
+                        Label("Operation failed", systemImage: "xmark.circle.fill")
+                            .foregroundColor(.red)
+                    } else {
+                        Label("Operation completed successfully", systemImage: "checkmark.circle.fill")
+                            .foregroundColor(.green)
                     }
-                    .keyboardShortcut(.escape)
+                } else {
+                    Label("Operation in progress...", systemImage: "gear")
+                        .foregroundColor(.secondary)
                 }
                 
                 Spacer()
-                
-                if !isRunning {
-                    Button("Execute") {
-                        executeCommand()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.return)
-                }
             }
+            .padding()
+            .background(Color(NSColor.controlBackgroundColor))
         }
-        .padding()
-        .frame(width: 700, height: 450)
+        .frame(minWidth: 700, minHeight: 500)
         .onAppear {
-            appendOutput("Ready to execute command...")
-            appendOutput("Click 'Execute' to start or press Enter")
+            startCloning()
         }
     }
     
-    private func appendOutput(_ text: String) {
-        DispatchQueue.main.async {
-            if !outputText.isEmpty {
-                outputText += "\n"
-            }
-            outputText += "[\(DateFormatter.timeFormatter.string(from: Date()))] \(text)"
+    private func lineColor(for line: String) -> Color {
+        if line.contains("❌") || line.contains("error") || line.contains("failed") || line.contains("Error") {
+            return .red
+        } else if line.contains("✅") || line.contains("success") || line.contains("completed") {
+            return .green
+        } else if line.contains("⚠️") || line.contains("warning") || line.contains("Warning") {
+            return .orange
         }
+        return .primary
     }
     
-    private func executeCommand() {
-        isRunning = true
-        outputText = ""
+    private func startCloning() {
         Task {
             do {
-                try await ASRUtility.cloneDiskWithOutput(source: source, target: target) { output in
-                    appendOutput(output)
-                }
+                let sourceToUse = isDMGSource ? (dmgPath ?? source) : source
+                
+                try await ASRUtility.cloneDiskWithOutput(
+                    source: sourceToUse,
+                    target: target,
+                    outputHandler: { line in
+                        output.append(line)
+                    },
+                    progressHandler: { prog in
+                        progress = prog
+                    }
+                )
+                
                 await MainActor.run {
-                    appendOutput("✅ Command completed successfully!")
                     isRunning = false
+                    hasError = false
                 }
             } catch {
                 await MainActor.run {
-                    appendOutput("❌ Error: \(error.localizedDescription)")
+                    output.append("❌ Error: \(error.localizedDescription)")
                     isRunning = false
+                    hasError = true
                 }
             }
         }
@@ -158,6 +171,8 @@ struct CommandOutputView: View {
     CommandOutputView(
         isPresented: .constant(true),
         source: "/dev/disk2",
-        target: "/dev/disk3"
+        target: "/dev/disk3",
+        isDMGSource: false,
+        dmgPath: nil
     )
 }

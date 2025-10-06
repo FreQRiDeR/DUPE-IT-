@@ -1,5 +1,11 @@
+//
+//  DiskInfo.swift
+//  DUPE-IT!
+//
+//  Created by FreQRiDeR on 9/9/25.
+//
+
 import Foundation
-import SwiftUI
 
 struct DiskInfo: Identifiable, Hashable {
     let id = UUID()
@@ -9,10 +15,14 @@ struct DiskInfo: Identifiable, Hashable {
     let type: String
     
     var displayName: String {
-        if name != "Unknown" && !name.isEmpty {
-            return "\(name) (\(deviceIdentifier))"
-        } else {
-            return deviceIdentifier
-        }
+        "\(name) (\(deviceIdentifier)) - \(size)"
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(deviceIdentifier)
+    }
+    
+    static func == (lhs: DiskInfo, rhs: DiskInfo) -> Bool {
+        lhs.deviceIdentifier == rhs.deviceIdentifier
     }
 }
