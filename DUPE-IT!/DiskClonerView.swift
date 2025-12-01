@@ -36,9 +36,10 @@ struct DiskClonerView: View {
             VStack(spacing: 20) {
                 // Header
                 VStack(spacing: 8) {
-                    Image(systemName: "externaldrive.fill.badge.plus")
-                        .font(.system(size: 48))
-                        .foregroundColor(.accentColor)
+                    Image("DUPE-IT")
+                        .resizable() // allows scaling
+                        .scaledToFit() // keeps aspect ratio
+                        .frame(width: 96, height: 96)
                     
                     Text("DUPE-IT! Disk Cloner")
                         .font(.largeTitle)
@@ -256,7 +257,7 @@ struct DiskClonerView: View {
             }
             .padding()
         }
-        .frame(minWidth: 500, minHeight: 700)
+        .frame(minWidth: 500, minHeight: 840)
         .onAppear {
             refreshDisks()
         }
