@@ -22,6 +22,7 @@ struct DiskClonerView: View {
     @State private var alertMessage = ""
     @State private var isCloning = false
     @State private var showingCommandOutput = false
+    @State private var isImageScanning = false
     
     // DMG Creator states
     @State private var selectedDMGSource: DiskInfo?
@@ -110,6 +111,25 @@ struct DiskClonerView: View {
                                 Button("Clear") { selectedDMGPath = nil }
                             }
                         }
+                        
+                        // ImageScan Button
+                        Button(action: startImageScan) {
+                            HStack {
+                                if isImageScanning {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "magnifyingglass.circle.fill")
+                                }
+                                Text(isImageScanning ? "Scanning..." : "ImageScan DMG")
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .background(canImageScan ? Color.blue : Color.gray)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                        }
+                        .disabled(!canImageScan || isImageScanning || isCloning || isCreatingDMG)
                     }
                     
                     // Target Selection
@@ -257,7 +277,7 @@ struct DiskClonerView: View {
             }
             .padding()
         }
-        .frame(minWidth: 500, minHeight: 840)
+        .frame(minWidth: 600, idealWidth: 700, minHeight: 900, idealHeight: 1024)
         .onAppear {
             refreshDisks()
         }
@@ -307,6 +327,11 @@ struct DiskClonerView: View {
         selectedDMGSource != nil && outputURL != nil && !isLoading
     }
     
+    private var canImageScan: Bool {
+        // Only enable if a DMG is selected and no internal disk is selected as source
+        selectedDMGPath != nil && selectedSource == nil && !isLoading
+    }
+    
     private func showSavePanel() {
         let savePanel = NSSavePanel()
         savePanel.title = "Save DMG File"
@@ -351,6 +376,44 @@ struct DiskClonerView: View {
         }
     }
     
+    private func startImageScan() {
+        guard let dmgPath = selectedDMGPath else { return }
+        
+        isImageScanning = true
+        
+        // Escape single quotes in path
+        let escapedPath = dmgPath.replacingOccurrences(of: "'", with: "'\\''")
+        
+        // Create AppleScript to open Terminal and run the command
+        let script = """
+        tell application "Terminal"
+            activate
+            do script "sudo asr imagescan --source '\(escapedPath)' --verbose"
+        end tell
+        """
+        
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/osascript")
+        process.arguments = ["-e", script]
+        
+        Task {
+            do {
+                try process.run()
+                process.waitUntilExit()
+                
+                await MainActor.run {
+                    isImageScanning = false
+                }
+            } catch {
+                await MainActor.run {
+                    alertMessage = "Failed to launch Terminal for ImageScan: \(error.localizedDescription)"
+                    showingAlert = true
+                    isImageScanning = false
+                }
+            }
+        }
+    }
+    
     private func startCloning() {
         // If using DMG as source
         if let dmgPath = selectedDMGPath, !dmgPath.isEmpty, selectedSource == nil {
@@ -359,16 +422,14 @@ struct DiskClonerView: View {
             }
             return
         }
-    guard selectedSource != nil, selectedTarget != nil else { return }
-    showingCommandOutput = true
+        guard selectedSource != nil, selectedTarget != nil else { return }
+        showingCommandOutput = true
     }
     
     private func startCreatingDMG() {
-    guard selectedDMGSource != nil, outputURL != nil else { return }
-    showingDMGCommandOutput = true
+        guard selectedDMGSource != nil, outputURL != nil else { return }
+        showingDMGCommandOutput = true
     }
-
-
 }
 
 #Preview {
